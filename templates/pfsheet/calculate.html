@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PF Calculate</title>
+    <style>
+        table,
+        th,
+        td {
+            border: 1px solid black;
+            border-collapse: collapse;
+        }
+
+        input {
+            outline: none;
+            border: none;
+            overflow: scroll;
+            width: 90px;
+            padding: 5px;
+        }
+        #info-div{
+            margin-top: 50px;
+        }
+        #submit-btn{
+            outline: 1px solid black;
+            width: 150px;
+            cursor: pointer;
+            /* height: 50px; */
+            overflow: hidden;
+        }
+        .name{
+            width: 150px;
+            /* overflow: scroll; */
+        }
+    </style>
+</head>
+
+<body>
+
+    <form action="/pfsheet/result" method="POST">
+        {% csrf_token %}
+        <table>
+            <thead>
+                <tr>
+                    <th>UAN</th>
+                    <th>Name</th>
+                    <th>Gross Wages</th>
+                    <th>EPF Wages</th>
+                    <th>EPS Wages</th>
+                    <th>EDLI Wages</th>
+                    <th>EE Share Remitted (12%)</th>
+                    <th>(8.33%)</th>
+                    <th>(%)</th>
+                    <th>NCP Days</th>
+                    <th>Refunds</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>
+                        <button id="raw-btn-7">Raw Calculate</button>
+                    </td>
+                    <td>
+                        <button id="raw-btn-8">Raw Calculate</button>
+                    </td>
+                    <td>
+                    </td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>
+                        <button id="round-btn-7" disabled>Round Up</button>
+                    </td>
+                    <td>
+                        <button id="round-btn-8" disabled>Round Up</button>
+                    </td>
+                    <td>
+                        <button id="btn-9" disabled>Calculate</button>
+                    </td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                {% for line in lines %}
+                <tr>
+                    {% for data in line %}
+                    {% if forloop.counter == 2 or forloop.counter == 1 %}
+                    <!-- <td>{{data}}</td> -->
+                    <td class="input-field"><input type="text"
+                            {% if forloop.counter == 2 %}
+                            class="row-{{forloop.parentloop.counter}} col-{{forloop.counter}} name"
+                            {% else %}
+                            class="row-{{forloop.parentloop.counter}} col-{{forloop.counter}}"
+                            {% endif %}
+                            name="row-{{forloop.parentloop.counter}}-col-{{forloop.counter}}"
+                            id="row-{{forloop.parentloop.counter}}-col-{{forloop.counter}}" value="{{data}}" >
+                    </td>
+                    {% elif forloop.counter >= 7 %}
+                    <td class="input-field"><input type="text"
+                            class="row-{{forloop.parentloop.counter}} col-{{forloop.counter}}"
+                            name="row-{{forloop.parentloop.counter}}-col-{{forloop.counter}}"
+                            id="row-{{forloop.parentloop.counter}}-col-{{forloop.counter}}" value="0"></td>
+                    {% else %}
+                    <td class="input-field"><input type="text"
+                            class="row-{{forloop.parentloop.counter}} col-{{forloop.counter}}"
+                            name="row-{{forloop.parentloop.counter}}-col-{{forloop.counter}}"
+                            id="row-{{forloop.parentloop.counter}}-col-{{forloop.counter}}" value={{data}}></td>
+                    {% endif %}
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div id="info-div">
+            No of Workers = {{lines|length}}
+            <input type="number" name="no_of_emps" value={{lines|length}} id="no_of_emps" hidden>
+            <input type="submit" id="submit-btn" value="Downlod the data file">
+        </div>
+    </form>
+    <script>
+        const col7s = document.querySelectorAll('.col-7');
+        const col8s = document.querySelectorAll('.col-8');
+        const col9s = document.querySelectorAll('.col-9');
+        const rawCalBtn7 = document.querySelector('#raw-btn-7')
+        const rawCalBtn8 = document.querySelector('#raw-btn-8')
+        const roundCalBtn7 = document.querySelector('#round-btn-7')
+        const roundCalBtn8 = document.querySelector('#round-btn-8')
+        const btn9 = document.querySelector('#btn-9');
+        let isRounded7 = false;
+        let isRounded8 = false;
+
+        rawCalBtn7.addEventListener('click', (e) => {
+            e.preventDefault();
+            for (let col7 of col7s) {
+                // console.log(col7.parentNode.parentElement.children[3]);
+                // col7.value = col7.parentNode.parentElement.children[3].innerText;
+                // console.log(col7.value)
+                // console.log(col7.parentNode.parentElement.children[3].childNodes[0].value)
+                col7.value = (+col7.parentNode.parentElement.children[3].childNodes[0].value * 12 / 100).toString();
+
+            }
+            roundCalBtn7.disabled = false;
+        })
+        rawCalBtn8.addEventListener('click', (e) => {
+            e.preventDefault();
+            for (let col8 of col8s) {
+                // console.log(col8.parentNode.parentElement.children[4]);
+                col8.value = (+col8.parentNode.parentElement.children[4].childNodes[0].value * 8.33 / 100).toString();
+            }
+            roundCalBtn8.disabled = false
+        })
+        roundCalBtn7.addEventListener('click', (e) => {
+            e.preventDefault();
+            for (let col7 of col7s) {
+                col7.value = round(col7.value);
+            }
+            isRounded7 = true
+            if (isRounded7 && isRounded8) {
+                btn9.disabled = false
+            }
+        });
+        roundCalBtn8.addEventListener('click', (e) => {
+            e.preventDefault();
+            for (let col8 of col8s) {
+                col8.value = round(col8.value);
+            }
+            isRounded8 = true
+            if (isRounded7 && isRounded8) {
+                btn9.disabled = false
+            }
+        });
+
+        btn9.addEventListener('click', (e) => {
+            e.preventDefault();
+            for (let col9 of col9s) {
+                // console.log(col8.parentNode.parentElement.children[4]);
+                // col8.value = (+col8.parentNode.parentElement.children[4].childNodes[0].value * 8.33 / 100).toString();
+                const parentElem = col9.parentNode.parentElement;
+                const op1 = +parentElem.children[6].childNodes[0].value;
+                const op2 = +parentElem.children[7].childNodes[0].value;
+                col9.value = (op1 - op2).toString();
+            }
+        })
+        function round(value) {
+            let actValue = +value;
+            let intValue = Math.floor(actValue);
+            let factValue = actValue - intValue;
+            if (factValue >= 0.5) {
+                intValue = intValue + 1;
+            }
+            return intValue;
+        }
+    </script>
+</body>
+
+</html>

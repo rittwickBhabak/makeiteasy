@@ -1,0 +1,12 @@
+{% extends 'pfsheet/base.html' %}
+
+{% block title %}PF{% endblock %}
+{% block body %}
+<h1>PF Sheet</h1>
+<form action="/pfsheet/calculate" method="POST" enctype="multipart/form-data">
+    {% csrf_token %}
+    <label for="myfile">Enter your file here</label>
+    <input type="file" id="myfile" name="myfile"/>
+    <input type="submit" value="Submit">
+</form>
+{% endblock %}
